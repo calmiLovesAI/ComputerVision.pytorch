@@ -1,0 +1,8 @@
+numpy
+opencv-python
+tensorboard
+tqdm
+pycocotools
+matplotlib
+PyYAML
+ultralytics

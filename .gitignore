@@ -1,0 +1,10 @@
+.idea
+.vscode
+__pycache__
+runs/
+test/
+saves/
+result/
+frames/
+log/
+test_yolo8.py
