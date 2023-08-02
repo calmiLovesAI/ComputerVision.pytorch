@@ -15,7 +15,7 @@ pip install -r requirements.txt
 ```
 
 ## 使用方法
-- [YOLOv8](https://github.com/calmisential/Detection.pytorch/blob/main/docs/yolov8.md)
+- [YOLOv8](https://github.com/calmiLovesAI/ComputerVision.pytorch/blob/main/docs/yolov8.md)
 
 ## 参考
 - https://github.com/bubbliiiing/ssd-pytorch
