@@ -1,5 +1,15 @@
-import torch
+import os
+import sys
 
+# 获取当前脚本所在目录的绝对路径
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# 将上级目录（core所在目录）加入到sys.path，这样就可以导入core下的模块
+parent_dir = os.path.join(current_dir, "..")
+sys.path.append(parent_dir)
+
+
+import torch
 import numpy as np
 
 from core.data import transforms as T
