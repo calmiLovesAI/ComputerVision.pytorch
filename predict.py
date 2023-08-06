@@ -10,10 +10,6 @@ from core.utils.ckpt import CheckPoint
 from scripts.detect import detect_video
 
 
-# # 权重文件位置
-# WEIGHTS = "saves/ultralytics/yolov8n_weights.pth"
-# # 输入文件类型：视频还是图片
-# TYPE = "image"  # "image" or "video"
 # 测试图片路径的列表
 IMAGE_PATHS = [
     "test/000000000049.jpg",
@@ -23,10 +19,6 @@ IMAGE_PATHS = [
     "test/2007_000033.jpg",
     "test/2007_002273.jpg",
 ]
-# # 原视频路径
-# SRC_VIDEO = "test/1.flv"
-# # 目标视频路径
-# DST_VIDEO = "test/det_1.mp4"
 
 
 def main():

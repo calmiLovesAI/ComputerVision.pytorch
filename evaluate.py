@@ -7,13 +7,6 @@ from registry import model_registry
 from core.utils.ckpt import CheckPoint
 
 
-# # "voc" or "coco"
-# DATASET = "coco"
-# # 权重文件位置
-# WEIGHTS = "saves/ultralytics/yolov8n_weights.pth"
-
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default='', help='model name')
