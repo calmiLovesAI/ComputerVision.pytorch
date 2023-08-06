@@ -45,11 +45,12 @@ class MeanMetric:
         self.__init__()
 
 
-class DetectionTrainer:
+class BaseTrainer:
 
-    def __init__(self, cfg, device):
-        self.device = device
+    def __init__(self, cfg, device, set_epoch=False):
         self.cfg = cfg
+        self.device = device
+        self.set_epoch = set_epoch
 
         # 模型总的训练轮数
         self.total_epoch = cfg.train.epoch
@@ -217,7 +218,9 @@ class DetectionTrainer:
             for m in train_metrics:
                 m.reset()
 
-            self.train_dataloader.dataset.epoch_now = epoch
+            if self.set_epoch:
+                # 设置当前epoch
+                self.train_dataloader.dataset.epoch_now = epoch
 
             with tqdm(self.train_dataloader,
                       desc=f"Epoch-{epoch}/{self.total_epoch}") as pbar:

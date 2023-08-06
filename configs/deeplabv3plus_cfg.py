@@ -11,6 +11,7 @@ class DeeplabV3PlusConfig:
         self.loss = self._Loss()
         self.optimizer = self._Optimizer()
         self.log = self._Log()
+        self.decode = self._Decode()
 
     class _Arch:
         def __init__(self):
@@ -28,6 +29,7 @@ class DeeplabV3PlusConfig:
             self.num_classes = VOC_CFG["num_classes"] + 1
             # 数据集名称，"voc"或者"coco"
             self.dataset_name = VOC_CFG["name"]
+            self.root = VOC_CFG["root"]
 
     class _Train:
         # 训练参数
@@ -53,7 +55,7 @@ class DeeplabV3PlusConfig:
             # 模型保存间隔
             self.save_interval = 10
             # 每隔多少epoch在验证集上验证一次
-            self.eval_interval = 0
+            self.eval_interval = 2
             # 保存模型的文件夹
             self.save_path = "saves"
             # 是否启动tensorboard
@@ -80,3 +82,7 @@ class DeeplabV3PlusConfig:
             self.root = "log"
             # 日志文件输出间隔
             self.print_interval = 50
+    
+    class _Decode:
+        def __init__(self):
+            self.test_results = "result"

@@ -7,7 +7,7 @@ from tqdm import tqdm
 from core.algorithms.ssd import Ssd
 from core.data.collate import ssd_collate
 from core.data.detection_dataset import DetectionDataset
-from core.trainer.base import DetectionTrainer
+from core.trainer.base import BaseTrainer
 from torch.utils.data import DataLoader
 
 from core.trainer.lr_scheduler import get_optimizer, warm_up_scheduler
@@ -19,9 +19,9 @@ from configs import SsdConfig
 
 
 @trainer_registry("ssd")
-class SsdTrainer(DetectionTrainer):
+class SsdTrainer(BaseTrainer):
     def __init__(self, cfg: SsdConfig, device):
-        super().__init__(cfg, device)
+        super().__init__(cfg, device, True)
         self.cfg = cfg
         self.device = device
         # 损失函数的返回值要与这里的metrics_name一一对应

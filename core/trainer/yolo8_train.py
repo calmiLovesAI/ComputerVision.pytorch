@@ -8,7 +8,7 @@ from tqdm import tqdm
 from core.algorithms.yolo_v8 import YOLOv8
 from core.data.collate import yolo8_collate
 from core.data.detection_dataset import DetectionDataset
-from core.trainer.base import DetectionTrainer
+from core.trainer.base import BaseTrainer
 from core.trainer.lr_scheduler import get_optimizer, warm_up_scheduler
 from core.trainer.warm_up import LinearWarmup
 from core.utils.useful_tools import move_to_device
@@ -17,9 +17,9 @@ from configs import Yolo8DetConfig
 
 
 @trainer_registry("yolo8_det")
-class Yolo8Trainer(DetectionTrainer):
+class Yolo8Trainer(BaseTrainer):
     def __init__(self, cfg: Yolo8DetConfig, device):
-        super().__init__(cfg, device)
+        super().__init__(cfg, device, True)
         self.cfg = cfg
         self.device = device
         # 损失函数的返回值要与这里的metrics_name一一对应

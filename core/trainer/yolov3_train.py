@@ -8,13 +8,13 @@ from core.loss.yolov3_loss import YoloLoss, make_label
 from core.metrics.eval import evaluate_pipeline
 from core.models.yolov3_model import YoloV3
 from core.predict.yolov3_decode import Decoder
-from core.trainer.base import DetectionTrainer
+from core.trainer.base import BaseTrainer
 from core.trainer.lr_scheduler import get_optimizer, warm_up_scheduler
 
 
-class Yolo3Trainer(DetectionTrainer):
+class Yolo3Trainer(BaseTrainer):
     def __init__(self, cfg, device):
-        super().__init__(cfg, device)
+        super().__init__(cfg, device, True)
         # 损失函数的返回值要与这里的metrics_name一一对应
         self.metric_names = ["loss", "loc_loss", "conf_loss", "prob_loss"]
         # 是否在tqdm进度条中显示上述metrics

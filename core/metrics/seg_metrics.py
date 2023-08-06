@@ -34,3 +34,6 @@ class SegmentationMetrics:
             "Mean IoU": mean_iu,
             "Class IoU": cls_iu
         }
+    
+    def reset(self):
+        self.confusion_matrix = np.zeros((self.num_classes, self.num_classes))
