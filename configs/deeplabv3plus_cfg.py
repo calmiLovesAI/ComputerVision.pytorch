@@ -55,7 +55,7 @@ class DeeplabV3PlusConfig:
             # 模型保存间隔
             self.save_interval = 10
             # 每隔多少epoch在验证集上验证一次
-            self.eval_interval = 2
+            self.eval_interval = 5
             # 保存模型的文件夹
             self.save_path = "saves"
             # 是否启动tensorboard
