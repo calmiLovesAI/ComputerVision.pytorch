@@ -2,7 +2,7 @@
 
 ## 安装和使用
 
-1. 下载数据集：参考[数据集的配置](https://github.com/calmisential/Detection.pytorch/blob/main/docs/dataset.md)
+1. 下载数据集：参考[数据集的配置](https://github.com/calmiLovesAI/ComputerVision.pytorch/blob/main/docs/dataset.md)
 2. 下载训练好的模型，使用`python convert_model.py`提取ultralytics的yolov8模型权重。
 3. 验证模型的性能：验证yolov8模型在COCO数据集上的表现可以使用：
 ```
