@@ -1,4 +1,3 @@
-import sys
 import argparse
 
 import torch
@@ -24,9 +23,6 @@ def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # show_supported_models_on_command_line(model_registry)
-    # print("请输入要训练的模型名：")
-    # model_name = sys.stdin.readline().strip()
     model_cfg, model_class, _ = export_from_registry(opts.model)
 
     model_object = model_class(model_cfg, device)
