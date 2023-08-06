@@ -1,7 +1,7 @@
 from torch.utils.data import DataLoader
 from core.data import transforms as T
 
-from core.data.voc import Voc
+from core.data.vocdetection import VocDetection
 
 
 class PublicDataLoader:
@@ -28,7 +28,7 @@ class PublicDataLoader:
 
     @staticmethod
     def _get_voc(train, transforms):
-        return Voc(train=train, transforms=transforms)
+        return VocDetection(train=train, transforms=transforms)
 
     def __call__(self, *args, **kwargs):
         if self.dataset_name == 'voc':

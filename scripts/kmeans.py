@@ -15,7 +15,7 @@ import numpy as np
 from core.data import transforms as T
 
 from tqdm import tqdm
-from core.data.voc import Voc
+from core.data.voc import VOCDetection
 from torch.utils.data import DataLoader
 
 # 配置文件
@@ -29,7 +29,7 @@ CFG = {
 
 def build_dataloader(cfg):
     if cfg["dataset"] == "voc":
-        dataset = Voc(True, T.Compose(transforms=[
+        dataset = VOCDetection(True, T.Compose(transforms=[
             T.Resize(size=cfg["input_size"]),
             T.TargetPadding(max_num_boxes=cfg["max_num_boxes"]),
             T.ToTensor()
