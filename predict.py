@@ -1,5 +1,6 @@
 import sys
 import time
+import argparse
 
 import torch
 from builder import export_from_registry
@@ -10,10 +11,10 @@ from core.utils.ckpt import CheckPoint
 from scripts.detect import detect_video
 
 
-# 权重文件位置
-WEIGHTS = "saves/ultralytics/yolov8n_weights.pth"
-# 输入文件类型：视频还是图片
-TYPE = "image"  # "image" or "video"
+# # 权重文件位置
+# WEIGHTS = "saves/ultralytics/yolov8n_weights.pth"
+# # 输入文件类型：视频还是图片
+# TYPE = "image"  # "image" or "video"
 # 测试图片路径的列表
 IMAGE_PATHS = [
     "test/000000000049.jpg",
@@ -23,35 +24,40 @@ IMAGE_PATHS = [
     "test/2007_000033.jpg",
     "test/2007_002273.jpg",
 ]
-# 原视频路径
-SRC_VIDEO = "test/1.flv"
-# 目标视频路径
-DST_VIDEO = "test/det_1.mp4"
+# # 原视频路径
+# SRC_VIDEO = "test/1.flv"
+# # 目标视频路径
+# DST_VIDEO = "test/det_1.mp4"
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model', type=str, default='', help='model name')
+    parser.add_argument('--ckpt', type=str, default='', help='model checkpoint path')
+    parser.add_argument('--type', type=str, default='', choices=["video", "image"], help='file type')
+    parser.add_argument('--src', type=str, default='', help='source video path')
+    parser.add_argument('--dst', type=str, default='', help='destination video path')
+    opts = parser.parse_args()
+
     t0 = time.time()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    show_supported_models_on_command_line(model_registry)
-    print("请输入要训练的模型名：")
-    model_name = sys.stdin.readline().strip()
-    model_cfg, model_class, _ = export_from_registry(model_name)
+    model_cfg, model_class, _ = export_from_registry(opts.model)
 
     model_object = model_class(model_cfg, device)
     model, _ = model_object.build_model()
     model.to(device)
 
     # 加载模型权重
-    CheckPoint.load_pure(WEIGHTS, device, model)
-    print(f"Loaded weights: {WEIGHTS}")
+    CheckPoint.load_pure(opts.ckpt, device, model)
+    print(f"Loaded weights: {opts.ckpt}")
 
-    assert TYPE in ["video", "image"], f"不支持{TYPE}类型的文件作为输入"
-    if TYPE == "video":
+    assert opts.type in ["video", "image"], f"不支持{opts.type}类型的文件作为输入"
+    if opts.type == "video":
         detect_video(
             model,
-            src_video_path=SRC_VIDEO,
-            dst_video_path=DST_VIDEO,
+            src_video_path=opts.src,
+            dst_video_path=opts.dst,
             decode_fn=model_object.predict,
         )
     else:
