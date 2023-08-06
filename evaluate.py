@@ -10,7 +10,7 @@ from core.utils.ckpt import CheckPoint
 # "voc" or "coco"
 DATASET = "coco"
 # 权重文件位置
-WEIGHTS = "saves/CenterNet_coco_weights.pth"
+WEIGHTS = "saves/ultralytics/yolov8n_weights.pth"
 
 
 def main():

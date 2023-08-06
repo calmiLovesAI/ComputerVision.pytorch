@@ -1,9 +1,14 @@
+import json
+import os
 import numpy as np
 import torch
 import torch.nn as nn
-
+from tqdm import tqdm
+from configs.dataset_cfg import COCO_CFG, VOC_CFG
+import xml.etree.ElementTree as ET
 
 from core.loss.ultralytics_loss import BboxLoss
+from core.metrics.mAP import get_coco_map, get_map
 from core.models.yolov8.yolo_v8 import get_yolo8_n, get_yolo8_s, get_yolo8_m, get_yolo8_l, get_yolo8_x
 from core.utils.anchor import make_anchors
 from core.utils.bboxes import TaskAlignedAssigner, dist2bbox
@@ -12,6 +17,9 @@ from core.utils.ultralytics_ops import non_max_suppression, xywh2xyxy
 from core.utils.visualize import show_detection_results
 from registry import model_registry
 from configs import Yolo8DetConfig
+
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
 
 
 class Loss:
@@ -232,3 +240,143 @@ class YOLOv8:
                                          self.input_image_size, [image_h, image_w],
                                          self.letterbox_image)
         return bbox, conf, cls
+    
+
+    def evaluate_on_voc(self, model, map_out_root, subset='val'):
+        # 切换为'eval'模式
+        model.eval()
+        gt_path = os.path.join(map_out_root, 'ground-truth')
+        detections_path = os.path.join(map_out_root, 'detection-results')
+        images_optional_path = os.path.join(map_out_root, 'images-optional')
+
+        for p in [map_out_root, gt_path, detections_path, images_optional_path]:
+            if not os.path.exists(p):
+                os.makedirs(p)
+
+        voc_root = VOC_CFG["root"]
+        voc_class_names = VOC_CFG["classes"]
+        if subset == 'val':
+            image_ids = open(os.path.join(voc_root, "ImageSets", "Main", "val.txt"), mode='r').read().strip().split(
+                '\n')
+        elif subset == 'test':
+            image_ids = open(os.path.join(voc_root, "ImageSets", "Main", "test.txt"), mode='r').read().strip().split(
+                '\n')
+        else:
+            raise ValueError(f"sub_set must be one of 'test' and 'val', but got {subset}")
+
+        with tqdm(image_ids, desc=f"Evaluate on voc-{subset}") as pbar:
+            for image_id in pbar:
+                # 图片预处理
+                image_path = os.path.join(voc_root, "JPEGImages", f"{image_id}.jpg")
+                image, h, w = read_image_and_convert_to_tensor(image_path, size=self.cfg.arch.input_size[1:],
+                                                               letterbox=self.letterbox_image)
+                image = image.to(self.device)
+
+                with torch.no_grad():
+                    preds = model(image)
+                    results = self.decode_box(preds, h, w, conf_threshold=0.001)
+
+                if results[0].shape[0] == 0:
+                    results[0] = np.zeros(shape=(1, 4), dtype=np.float32)
+                
+                boxes = results[0]
+                scores = results[1]
+                class_indices = results[2]
+
+                # 将检测结果写入txt文件中
+                with open(file=os.path.join(detections_path, f"{image_id}.txt"), mode='w', encoding='utf-8') as f:
+                    for i, c in enumerate(class_indices):
+                        predicted_class = voc_class_names[int(c)]
+                        score = str(scores[i])
+
+                        top = boxes[i, 1]  # ymin
+                        left = boxes[i, 0]  # xmin
+                        bottom = boxes[i, 3]  # ymax
+                        right = boxes[i, 2]  # xmax
+
+                        f.write(f"{predicted_class} {score[:6]} {int(left)} {int(top)} {int(right)} {int(bottom)}\n")
+
+        print("Successfully generated detection results")
+
+        print("Generating ground truth")
+        for image_id in tqdm(image_ids):
+            with open(file=os.path.join(gt_path, f"{image_id}.txt"), mode='w', encoding='utf-8') as gt_f:
+                root = ET.parse(os.path.join(voc_root, "Annotations", f"{image_id}.xml")).getroot()
+                for obj in root.findall('object'):
+                    difficult_flag = False
+                    if obj.find('difficult') is not None:
+                        difficult = obj.find('difficult').text
+                        if int(difficult) == 1:
+                            difficult_flag = True
+                    obj_name = obj.find('name').text
+                    if obj_name not in voc_class_names:
+                        continue
+                    bndbox = obj.find('bndbox')
+                    left = bndbox.find('xmin').text
+                    top = bndbox.find('ymin').text
+                    right = bndbox.find('xmax').text
+                    bottom = bndbox.find('ymax').text
+
+                    if difficult_flag:
+                        gt_f.write(f"{obj_name} {left} {top} {right} {bottom} difficult\n")
+                    else:
+                        gt_f.write(f"{obj_name} {left} {top} {right} {bottom}\n")
+
+        print("Calculating metrics")
+        # 第一个参数表示预测框与真实框的重合程度
+        get_map(0.5, draw_plot=True, score_threshold=0.5, path=map_out_root)
+        print("Calculating coco metrics")
+        get_coco_map(class_names=voc_class_names, path=map_out_root)
+
+    def evaluate_on_coco(self, model, map_out_root, subset='val'):
+        if subset == 'val':
+            # 在coco val2017上测试
+            cocoGt_path = os.path.join(COCO_CFG["root"], "annotations", "instances_val2017.json")
+            dataset_img_path = os.path.join(COCO_CFG["root"], "images", "val2017")
+
+        # 切换为'eval'模式
+        model.eval()
+        if not os.path.exists(map_out_root):
+            os.makedirs(map_out_root)
+        cocoGt = COCO(cocoGt_path)
+        ids = list(cocoGt.imgToAnns.keys())
+        clsid2catid = cocoGt.getCatIds()
+        with open(os.path.join(map_out_root, 'eval_results.json'), "w") as f:
+            results = []
+            for image_id in tqdm(ids):
+                image_path = os.path.join(dataset_img_path, cocoGt.loadImgs(image_id)[0]['file_name'])
+
+                # 图片预处理
+                image, h, w = read_image_and_convert_to_tensor(image_path, size=self.cfg.arch.input_size[1:],
+                                                               letterbox=self.letterbox_image)
+                image = image.to(self.device)
+
+                with torch.no_grad():
+                    preds = model(image)
+                    outputs = self.decode_box(preds, h, w, conf_threshold=0.001)
+
+                if outputs[0].shape[0] == 0:
+                    outputs[0] = np.zeros(shape=(1, 4), dtype=np.float32)
+                
+                top_boxes = outputs[0]
+                top_conf = outputs[1]
+                top_label = outputs[2]
+
+                for i, c in enumerate(top_label):
+                    result = {}
+                    left, top, right, bottom = top_boxes[i]
+
+                    result["image_id"] = int(image_id)
+                    result["category_id"] = clsid2catid[c]
+                    result["bbox"] = [float(left), float(top), float(right - left), float(bottom - top)]
+                    result["score"] = float(top_conf[i])
+                    results.append(result)
+
+            json.dump(results, f)
+
+        cocoDt = cocoGt.loadRes(os.path.join(map_out_root, 'eval_results.json'))
+        cocoEval = COCOeval(cocoGt, cocoDt, 'bbox')
+        cocoEval.evaluate()
+        cocoEval.accumulate()
+        cocoEval.summarize()
+        print("Get map done.")
