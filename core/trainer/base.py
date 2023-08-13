@@ -234,7 +234,7 @@ class BaseTrainer:
                     )['param_groups'][0]['lr']
                     if self.tensorboard_on:
                         writer.add_scalar(
-                            tag="Learning rate",
+                            tag="Train/Learning rate",
                             scalar_value=current_lr,
                             global_step=epoch * len(self.train_dataloader) + i)
                         for k in range(n):
@@ -265,6 +265,12 @@ class BaseTrainer:
             if self.eval_interval != 0 and epoch % self.eval_interval == 0:
                 evaluation = self.evaluate_loop()
                 print([f"{k}={v:.5f}" for k, v in evaluation.items()])
+                if self.tensorboard_on:
+                    for k, v in evaluation.items():
+                        writer.add_scalar(
+                            tag=f"Val/{k}",
+                            scalar_value=v,
+                            global_step=epoch)
                 self.train_logger.info(
                     msg=f"===========Evaluate after epoch-{epoch}============\n {pbar_postfix_to_msg(evaluation, False)}")
 
