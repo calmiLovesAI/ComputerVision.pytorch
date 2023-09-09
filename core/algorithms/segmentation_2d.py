@@ -4,12 +4,15 @@ import torch.nn as nn
 import torchvision.transforms.functional as F
 import numpy as np
 import cv2
+from tqdm import tqdm
 
 from configs import DeeplabV3PlusConfig
-from core.data.segmentation_dataset import CITYSCAPES_COLORMAP, VOC_COLORMAP
+from core.data.segmentation_dataset import CITYSCAPES_COLORMAP, VOC_COLORMAP, get_voc_dataloader
 from core.loss.focal_loss import FocalLoss
+from core.metrics.seg_metrics import SegmentationMetrics
 from core.models.deeplabv3plus import DeeplabV3Plus
 from core.utils.image_process import read_image, read_image_and_convert_to_tensor
+from core.utils.useful_tools import move_to_device
 from core.utils.visualize import now
 from registry import model_registry
 
@@ -43,19 +46,22 @@ class DeeplabV3PlusA:
         self.device = device
 
         self.loss_type = cfg.loss.loss_type
+        self.num_classes = cfg.dataset.num_classes
+        self.input_image_size = cfg.arch.input_size
+        self.batch_size = cfg.train.batch_size
 
     def build_model(self):
         return DeeplabV3Plus(num_classes=self.cfg.dataset.num_classes,
-                      output_stride=self.cfg.arch.output_stride,
-                      pretrained_backbone=self.cfg.arch.backbone_pretrained), "deeplabv3plus"
-    
+                             output_stride=self.cfg.arch.output_stride,
+                             pretrained_backbone=self.cfg.arch.backbone_pretrained), "deeplabv3plus"
+
     def build_loss(self):
         if self.loss_type == "ce":
             criterion = nn.CrossEntropyLoss(reduction='mean')
         elif self.loss_type == "focal":
             criterion = FocalLoss()
         return criterion
-    
+
     def _reshape_pred(self, pred, h, w):
         """
         将预测结果reshape到原图大小
@@ -64,12 +70,12 @@ class DeeplabV3PlusA:
         :param w: 原图宽度
         """
         result = torch.squeeze(pred, dim=0)
-        result = torch.permute(result, dims=[2, 0, 1])   # (h, w, c) -> (c, h, w)
+        result = torch.permute(result, dims=[2, 0, 1])  # (h, w, c) -> (c, h, w)
         # back to original size
         result = F.resize(result, size=(h, w))
-        result = torch.permute(result, dims=[1, 2, 0])   # (c, h, w) -> (h, w, c)
+        result = torch.permute(result, dims=[1, 2, 0])  # (c, h, w) -> (h, w, c)
         return result
-    
+
     def predict(self, model, image_path, print_on, save_result):
         """
         对单张图片进行预测
@@ -104,9 +110,60 @@ class DeeplabV3PlusA:
             cv2.imwrite(save_filename, result)
         else:
             return result
-                
 
+    def evaluate_on_voc(self, model, results_out_root, subset='val'):
+        """
+        在voc数据集上验证结果
+        :param model: 模型
+        :param results_out_root: 结果保存路径
+        :param subset: VOC的子集
+        :return: None
+        """
 
-    
+        print(f"自动忽略{results_out_root}，该路径不起作用")
+        model.eval()
 
+        print(f"加载数据集VOC-{subset}......")
+        dataset_root = self.cfg.dataset.root
+        crop_size = self.cfg.arch.crop_size
 
+        if subset == "val":
+            val_dataloader = get_voc_dataloader(
+                root=dataset_root,
+                batch_size=self.batch_size,
+                input_size=self.input_image_size,
+                crop_size=crop_size,
+                is_train=False,
+            )
+        else:
+            raise ValueError(f"不支持VOC-{subset}")
+
+        metrics = SegmentationMetrics(num_classes=self.num_classes)
+        metrics.reset()
+        print(f"验证中......")
+        with tqdm(val_dataloader, desc="Evaluate") as pbar:
+            with torch.no_grad():
+                for i, (images, targets) in enumerate(pbar):
+                    images = move_to_device(images, self.device)
+                    targets = move_to_device(targets, self.device)
+                    preds = model(images)
+
+                    preds = torch.argmax(preds, dim=1)
+                    metrics.add_batch(predictions=preds.cpu().numpy(), gts=targets.cpu().numpy())
+
+        metric_results = metrics.get_results()
+        print(f"结果：\nOverall Acc: {metric_results['Overall Acc']}\n"
+              f"Mean Acc: {metric_results['Mean Acc']}\n"
+              f"FreqW Acc: {metric_results['FreqW Acc']}\n"
+              f"Mean IoU: {metric_results['Mean IoU']}")
+
+    def evaluate_on_coco(self, model, results_out_root, subset='val'):
+        """
+        在coco数据集上验证结果
+        :param model: 模型
+        :param results_out_root: 结果保存路径
+        :param subset: coco的子集
+        :return: None
+        """
+        raise NotImplementedError("不支持coco")
+        pass

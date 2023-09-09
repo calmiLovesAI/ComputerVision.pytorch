@@ -95,7 +95,7 @@ class Loss:
 
         # (bs, num_max_true_boxes, 1), (bs, num_max_true_boxes, 4)
         gt_labels, gt_bboxes = targets.split((1, 4), 2)  # cls, xyxy
-        mask_gt = gt_bboxes.sum(2, keepdim=True).gt_(0)   # (bs, num_max_true_boxes, 1)
+        mask_gt = gt_bboxes.sum(2, keepdim=True).gt_(0)  # (bs, num_max_true_boxes, 1)
 
         # pboxes
         pred_bboxes = self.bbox_decode(anchor_points, pred_distri)  # xyxy, (b, 8400, 4)
@@ -240,7 +240,6 @@ class YOLOv8:
                                          self.input_image_size, [image_h, image_w],
                                          self.letterbox_image)
         return bbox, conf, cls
-    
 
     def evaluate_on_voc(self, model, map_out_root, subset='val'):
         # 切换为'eval'模式
@@ -278,7 +277,7 @@ class YOLOv8:
 
                 if results[0].shape[0] == 0:
                     results[0] = np.zeros(shape=(1, 4), dtype=np.float32)
-                
+
                 boxes = results[0]
                 scores = results[1]
                 class_indices = results[2]
@@ -357,7 +356,7 @@ class YOLOv8:
 
                 if outputs[0].shape[0] == 0:
                     outputs[0] = np.zeros(shape=(1, 4), dtype=np.float32)
-                
+
                 top_boxes = outputs[0]
                 top_conf = outputs[1]
                 top_label = outputs[2]

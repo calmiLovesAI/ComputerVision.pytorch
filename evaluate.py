@@ -24,7 +24,7 @@ def main():
 
     # 加载模型权重
     CheckPoint.load_pure(opts.ckpt, device, model)
-    print(f"Loaded weights: {opts.ckpt}")
+    print(f"加载权重文件: {opts.ckpt}成功")
 
     if opts.dataset == "voc":
         model_object.evaluate_on_voc(model, "result/voc", subset='val')
