@@ -1,5 +1,7 @@
+ALL_DATASETS_ROOT = "../../Datasets/"
+
 VOC_CFG = {
-    "root": "../ZONE_FOR_DATA/VOCdevkit/VOC2012/",
+    "root": ALL_DATASETS_ROOT + "VOCdevkit/VOC2012/",
     "name": "voc",
     "num_classes": 20,
     "classes": [
@@ -27,7 +29,7 @@ VOC_CFG = {
 }
 
 COCO_CFG = {
-    "root": "../ZONE_FOR_DATA/coco",
+    "root": ALL_DATASETS_ROOT + "coco",
     "name": "coco",
     "num_classes": 80,
     "classes": [
