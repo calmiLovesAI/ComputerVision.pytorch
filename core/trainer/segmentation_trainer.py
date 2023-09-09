@@ -152,8 +152,8 @@ class DeeplabV3PlusTrainer(BaseTrainer):
 
         val_loss /= num_batches
         metric_results = self.metrics.get_results()
-        return {"val/Loss": val_loss,
-                "val/Overall Acc": metric_results["Overall Acc"],
-                "val/Mean Acc": metric_results["Mean Acc"],
-                "val/FreqW Acc": metric_results["FreqW Acc"],
-                "val/Mean IoU": metric_results["Mean IoU"]}
+        return {"Loss": val_loss,
+                "Overall Acc": metric_results["Overall Acc"],
+                "Mean Acc": metric_results["Mean Acc"],
+                "FreqW Acc": metric_results["FreqW Acc"],
+                "Mean IoU": metric_results["Mean IoU"]}

@@ -234,7 +234,7 @@ class BaseTrainer:
                     )['param_groups'][0]['lr']
                     if self.tensorboard_on:
                         writer.add_scalar(
-                            tag="Train/Learning rate",
+                            tag="Learning rate",
                             scalar_value=current_lr,
                             global_step=epoch * len(self.train_dataloader) + i)
                         for k in range(n):
