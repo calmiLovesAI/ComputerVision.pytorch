@@ -1,3 +1,4 @@
+from check import check_model_name
 from configs import *
 from registry import config_registry, model_registry, trainer_registry
 from core.trainer import *
@@ -11,6 +12,7 @@ def export_from_registry(name: str):
     :return: 配置文件类，模型类，训练类
     """
     name = name.lower()
+    check_model_name(name)
     cfg_name = "cfg_" + name
     model_name = "model_" + name
     trainer_name = "trainer_" + name
