@@ -15,7 +15,19 @@ pip install -r requirements.txt
 ```
 
 ## 使用方法
+### 1. 数据集
+[数据集的配置](https://github.com/calmiLovesAI/ComputerVision.pytorch/blob/main/docs/dataset.md)
+### 2. 模型训练和预测
 - [YOLOv8](https://github.com/calmiLovesAI/ComputerVision.pytorch/blob/main/docs/yolov8.md)
+
+
+### 3. Tensorboard使用
+1. 在`configs`目录下的`xxx_cfg.py`配置文件中，确保`self.tensorboard_on`的值为**True**
+2. 在项目根目录下，运行
+```commandline
+tensorboard --logdir=runs
+```
+打开浏览器窗口查看训练过程中的记录，可以使用`--log_prefix="prefix_1"`选择名字以prefix_1开头的文件
 
 ## 参考
 - https://github.com/bubbliiiing/ssd-pytorch

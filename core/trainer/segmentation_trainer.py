@@ -11,7 +11,7 @@ from core.data.segmentation_dataset import (
 )
 from core.metrics.seg_metrics import SegmentationMetrics
 from core.trainer.base import BaseTrainer
-from core.trainer.lr_scheduler import get_optimizer, warm_up_scheduler
+from core.trainer.lr_scheduler import get_optimizer, warm_up_scheduler, EnhancedMultiStepLR
 from core.trainer.warm_up import LinearWarmup
 from core.utils.useful_tools import move_to_device
 from registry import trainer_registry
@@ -94,7 +94,7 @@ class DeeplabV3PlusTrainer(BaseTrainer):
         self.optimizer = get_optimizer(self.optimizer_name, self.model, self.initial_lr)
     
     def set_lr_scheduler(self):
-        self.lr_scheduler = MultiStepLR(
+        self.lr_scheduler = EnhancedMultiStepLR(
             optimizer=self.optimizer,
             milestones=self.milestones,
             gamma=self.gamma,

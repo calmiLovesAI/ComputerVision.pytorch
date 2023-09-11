@@ -1,5 +1,6 @@
 import math
 from copy import deepcopy
+from torch.optim.lr_scheduler import MultiStepLR
 
 import torch
 
@@ -81,3 +82,10 @@ class ModelEMA:
     def update_attr(self, model, include=(), exclude=('process_group', 'reducer')):
         # Update EMA attributes
         copy_attr(self.ema, model, include, exclude)
+
+
+class EnhancedMultiStepLR(MultiStepLR):
+    def __init__(self, optimizer, milestones, gamma=0.1, last_epoch=-1, verbose=False):
+        if not self.milestones:
+            self.milestones = [int(1e8), int(1e8)+1]
+        super().__init__(optimizer, milestones, gamma=gamma, last_epoch=last_epoch, verbose=verbose)

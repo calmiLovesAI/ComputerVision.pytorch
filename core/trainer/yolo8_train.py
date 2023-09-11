@@ -9,7 +9,7 @@ from core.algorithms.yolo_v8 import YOLOv8
 from core.data.collate import yolo8_collate
 from core.data.detection_dataset import DetectionDataset
 from core.trainer.base import BaseTrainer
-from core.trainer.lr_scheduler import get_optimizer, warm_up_scheduler
+from core.trainer.lr_scheduler import get_optimizer, warm_up_scheduler, EnhancedMultiStepLR
 from core.trainer.warm_up import LinearWarmup
 from core.utils.useful_tools import move_to_device
 from registry import trainer_registry
@@ -74,7 +74,7 @@ class Yolo8Trainer(BaseTrainer):
         self.optimizer = get_optimizer(self.optimizer_name, self.model, self.initial_lr)
 
     def set_lr_scheduler(self):
-        self.lr_scheduler = MultiStepLR(
+        self.lr_scheduler = EnhancedMultiStepLR(
             optimizer=self.optimizer,
             milestones=self.milestones,
             gamma=self.gamma,
