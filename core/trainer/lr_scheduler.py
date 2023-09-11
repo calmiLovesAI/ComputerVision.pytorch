@@ -86,6 +86,6 @@ class ModelEMA:
 
 class EnhancedMultiStepLR(MultiStepLR):
     def __init__(self, optimizer, milestones, gamma=0.1, last_epoch=-1, verbose=False):
-        if not self.milestones:
-            self.milestones = [int(1e8), int(1e8)+1]
+        if not milestones:
+            milestones = [int(1e8), int(1e8)+1]
         super().__init__(optimizer, milestones, gamma=gamma, last_epoch=last_epoch, verbose=verbose)
