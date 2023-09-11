@@ -211,19 +211,3 @@ class Draw:
             # cv2.putText(img=image, text=class_and_score, org=(boxes[i, 0], boxes[i, 1] - int(d)),
             #             fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=r, color=(0, 255, 255), thickness=1)
         return image
-
-
-
-def show_supported_models_on_command_line(model_registry):
-    """
-    在命令行中显示支持的模型
-    :param registry: 模型注册器
-    :return:
-    """
-    print("===========================")
-    print("Supported models: ")
-    for i, item in enumerate(model_registry.keys()):
-        # 移除开头的 "model_"
-        model_name = item[6:]
-        print(f"{i}: {model_name}")
-    print("===========================")

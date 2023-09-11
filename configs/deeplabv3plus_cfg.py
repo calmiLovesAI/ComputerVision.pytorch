@@ -39,7 +39,7 @@ class DeeplabV3PlusConfig:
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
             self.last_epoch = -1
 
-            self.epoch = 100
+            self.epoch = 150
             self.batch_size = 16
             # 初始学习率
             self.initial_lr = 1e-3

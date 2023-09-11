@@ -49,6 +49,7 @@ class DeeplabV3PlusA:
         self.num_classes = cfg.dataset.num_classes
         self.input_image_size = cfg.arch.input_size
         self.batch_size = cfg.train.batch_size
+        self.dataset_name = cfg.dataset.dataset_name
 
     def build_model(self):
         return DeeplabV3Plus(num_classes=self.cfg.dataset.num_classes,
@@ -119,8 +120,12 @@ class DeeplabV3PlusA:
         :param subset: VOC的子集
         :return: None
         """
-
-        print(f"自动忽略{results_out_root}，该路径不起作用")
+        model_name = "DeepLabV3Plus"
+        results_out_root = os.path.join(results_out_root, model_name)
+        if not os.path.exists(results_out_root):
+            os.makedirs(results_out_root)
+            print(f"创建路径{results_out_root}成功")
+        results_filepath = os.path.join(results_out_root, f"{model_name}_{self.dataset_name}_{now()}.txt")
         model.eval()
 
         print(f"加载数据集VOC-{subset}......")
@@ -152,18 +157,22 @@ class DeeplabV3PlusA:
                     metrics.add_batch(predictions=preds.cpu().numpy(), gts=targets.cpu().numpy())
 
         metric_results = metrics.get_results()
-        print(f"结果：\nOverall Acc: {metric_results['Overall Acc']}\n"
-              f"Mean Acc: {metric_results['Mean Acc']}\n"
-              f"FreqW Acc: {metric_results['FreqW Acc']}\n"
-              f"Mean IoU: {metric_results['Mean IoU']}")
+        formatted = (f"Overall Acc: {metric_results['Overall Acc']}\n"
+                     f"Mean Acc: {metric_results['Mean Acc']}\n"
+                     f"FreqW Acc: {metric_results['FreqW Acc']}\n"
+                     f"Mean IoU: {metric_results['Mean IoU']}")
+        print(f"结果：\n{formatted}")
+        with open(file=results_filepath, mode="w", encoding="utf-8") as f:
+            f.writelines(formatted)
 
-    def evaluate_on_coco(self, model, results_out_root, subset='val'):
-        """
-        在coco数据集上验证结果
-        :param model: 模型
-        :param results_out_root: 结果保存路径
-        :param subset: coco的子集
-        :return: None
-        """
-        raise NotImplementedError("不支持coco")
-        pass
+
+def evaluate_on_coco(self, model, results_out_root, subset='val'):
+    """
+    在coco数据集上验证结果
+    :param model: 模型
+    :param results_out_root: 结果保存路径
+    :param subset: coco的子集
+    :return: None
+    """
+    raise NotImplementedError("不支持coco")
+    pass

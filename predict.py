@@ -3,7 +3,6 @@ import argparse
 
 import torch
 from builder import export_from_registry
-from core.utils.visualize import show_supported_models_on_command_line
 
 from registry import model_registry
 from core.utils.ckpt import CheckPoint
