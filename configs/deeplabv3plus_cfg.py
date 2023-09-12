@@ -39,12 +39,12 @@ class DeeplabV3PlusConfig:
             # 恢复训练时的上一次epoch是多少，-1表示从epoch=0开始训练
             self.last_epoch = -1
 
-            self.epoch = 150
+            self.epoch = 100
             self.batch_size = 16
             # 初始学习率
             self.initial_lr = 1e-3
             # warm up轮数
-            self.warmup_iters = 1000
+            self.warmup_iters = 0
             self.milestones = []
             self.gamma = 0.1
 
@@ -68,7 +68,7 @@ class DeeplabV3PlusConfig:
     class _Loss:
         # 损失函数
         def __init__(self):
-            self.loss_type = "ce"
+            self.loss_type = "focal"
 
     class _Optimizer:
         # 优化器

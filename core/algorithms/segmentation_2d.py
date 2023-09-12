@@ -165,14 +165,13 @@ class DeeplabV3PlusA:
         with open(file=results_filepath, mode="w", encoding="utf-8") as f:
             f.writelines(formatted)
 
-
-def evaluate_on_coco(self, model, results_out_root, subset='val'):
-    """
-    在coco数据集上验证结果
-    :param model: 模型
-    :param results_out_root: 结果保存路径
-    :param subset: coco的子集
-    :return: None
-    """
-    raise NotImplementedError("不支持coco")
-    pass
+    def evaluate_on_coco(self, model, results_out_root, subset='val'):
+        """
+        在coco数据集上验证结果
+        :param model: 模型
+        :param results_out_root: 结果保存路径
+        :param subset: coco的子集
+        :return: None
+        """
+        raise NotImplementedError("不支持coco")
+        pass

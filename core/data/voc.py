@@ -78,7 +78,6 @@ class VOCDetection(Dataset):
         return box_class_list
 
 
-
 class VOCSegmentation(Dataset):
     def __init__(self, root, image_set, transform=None):
         """
