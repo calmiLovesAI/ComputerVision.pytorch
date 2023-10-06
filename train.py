@@ -1,6 +1,7 @@
 import argparse
 import torch
 from builder import export_from_registry
+from core.utils.device import get_currently_accessible_device
 
 
 def main():
@@ -8,7 +9,7 @@ def main():
     parser.add_argument('--model', type=str, default='', help='model name')
     opts = parser.parse_args()
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = get_currently_accessible_device()
 
     model_cfg, _, trainer = export_from_registry(opts.model)
 
