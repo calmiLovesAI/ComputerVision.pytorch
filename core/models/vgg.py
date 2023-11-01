@@ -3,14 +3,15 @@ import warnings
 import torch
 import torch.nn as nn
 
-from core.utils.useful_tools import check_list_slice_index_valid
+from core.utils.device import get_currently_accessible_device
+from core.utils.file_ops import load_state_dict_from_url
 
 __all__ = [
     "BaseVGG",
     "get_vgg11",
     "get_vgg13",
     "get_vgg16",
-    "get_vgg19"
+    "get_vgg19",
 ]
 
 VGG_STRUCTURES = {
@@ -54,9 +55,9 @@ class BaseVGG(nn.Module):
         layers = []
         in_channels = c_in
         for v in self.structure:
-            if v == 'M':  # 池化层
+            if v == 'M':  # max pool layer
                 layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
-            else:  # 卷积层
+            else:  # conv layer
                 conv2d = nn.Conv2d(in_channels, v, kernel_size=3, stride=1, padding=1)
                 if batch_norm:
                     layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU(inplace=True)]
@@ -74,84 +75,47 @@ class BaseVGG(nn.Module):
         return x
 
 
-def get_vgg11(start_layer=0, end_layer=-1, pretrained=True, num_classes=1000):
+def get_vgg(vgg_type, end_layer=-1, pretrained=True, num_classes=1000, only_feature=True):
     """
-    导出VGG11模型
-    :param start_layer: int, 开始层的序号，默认为0
-    :param end_layer: int, 结束层的序号，默认为-1
+    导出VGG模型
+    :param vgg_type: str, vgg类型，可选择的有：11，13，16，19
+    :param end_layer: int, feature结束层的序号，默认为-1，当only_feature为True时有效
     :param pretrained: bool，默认为True
     :param num_classes: int, 最后一个Linear层输出通道数，默认为1000
+    :param only_feature: int, 仅返回特征提取层
     :return:
     """
-    vgg11 = BaseVGG("11", 3, num_classes=num_classes)
-    n_layers = len(vgg11)
-    print(vgg11)
-    if not check_list_slice_index_valid(n_layers, start_idx=start_layer, end_idx=end_layer):
-        raise ValueError(f"vgg11有{n_layers}层，但是start_layer = {start_layer}，end_layer = {end_layer}")
+    vgg = BaseVGG(vgg_type, 3, num_classes=num_classes)
+    model_name = f"vgg{vgg_type}"
+    n_layers = len(vgg.features)
+    if end_layer < 0:
+        end_layer = n_layers + end_layer
+    if end_layer > n_layers:
+        raise ValueError(
+            f"The end_layer is {end_layer}, which is greater than the {model_name}'s total feature layers number: {n_layers}.")
     if pretrained:
-        pass
+        # 加载预训练模型
+        state_dict = load_state_dict_from_url(url=VGG_BN_WEIGHTS["11"],
+                                              model_dir="downloads/vgg11_ImageNet1K.pth",
+                                              map_location=get_currently_accessible_device())
+        vgg.load_state_dict(state_dict)
+    if only_feature and end_layer != n_layers:
+        return vgg.features[:end_layer + 1]
+    else:
+        return vgg
 
 
-class VGG11(BaseVGG):
-    model_name = "VGG11"
-
-    def __init__(self, cfg):
-        super(VGG11, self).__init__(cfg,
-                                    [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
-                                    True)
-
-        default_shape = (224, 224)
-        input_shape = tuple(cfg["Train"]["input_size"][1:])
-        if input_shape != default_shape:
-            warnings.warn(
-                "你正在使用的输入图片大小：{}与{}默认的输入图片大小：{}不符！".format(input_shape, self.model_name,
-                                                                                   default_shape))
+def get_vgg11(end_layer=-1, pretrained=True, num_classes=1000, only_feature=True):
+    return get_vgg("11", end_layer, pretrained, num_classes, only_feature)
 
 
-class VGG13(BaseVGG):
-    model_name = "VGG13"
-
-    def __init__(self, cfg):
-        super(VGG13, self).__init__(cfg,
-                                    [64, 64, "M", 128, 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
-                                    True)
-
-        default_shape = (224, 224)
-        input_shape = tuple(cfg["Train"]["input_size"][1:])
-        if input_shape != default_shape:
-            warnings.warn(
-                "你正在使用的输入图片大小：{}与{}默认的输入图片大小：{}不符！".format(input_shape, self.model_name,
-                                                                                   default_shape))
+def get_vgg13(end_layer=-1, pretrained=True, num_classes=1000, only_feature=True):
+    return get_vgg("13", end_layer, pretrained, num_classes, only_feature)
 
 
-class VGG16(BaseVGG):
-    model_name = "VGG16"
-
-    def __init__(self, cfg):
-        super(VGG16, self).__init__(cfg,
-                                    [64, 64, "M", 128, 128, "M", 256, 256, 256, "M", 512, 512, 512, "M", 512, 512, 512,
-                                     "M"],
-                                    True)
-        default_shape = (224, 224)
-        input_shape = tuple(cfg["Train"]["input_size"][1:])
-        if input_shape != default_shape:
-            warnings.warn(
-                "你正在使用的输入图片大小：{}与{}默认的输入图片大小：{}不符！".format(input_shape, self.model_name,
-                                                                                   default_shape))
+def get_vgg16(end_layer=-1, pretrained=True, num_classes=1000, only_feature=True):
+    return get_vgg("16", end_layer, pretrained, num_classes, only_feature)
 
 
-class VGG19(BaseVGG):
-    model_name = "VGG19"
-
-    def __init__(self, cfg):
-        super(VGG19, self).__init__(cfg,
-                                    [64, 64, "M", 128, 128, "M", 256, 256, 256, 256, "M", 512, 512, 512, 512, "M", 512,
-                                     512, 512, 512, "M"],
-                                    True)
-
-        default_shape = (224, 224)
-        input_shape = tuple(cfg["Train"]["input_size"][1:])
-        if input_shape != default_shape:
-            warnings.warn(
-                "你正在使用的输入图片大小：{}与{}默认的输入图片大小：{}不符！".format(input_shape, self.model_name,
-                                                                                   default_shape))
+def get_vgg19(end_layer=-1, pretrained=True, num_classes=1000, only_feature=True):
+    return get_vgg("19", end_layer, pretrained, num_classes, only_feature)

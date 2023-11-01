@@ -2,6 +2,13 @@ import os
 import torch
 
 
+def get_root_absolute_path():
+    # 获取当前文件所在的绝对路径
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    # 获取上两级目录的绝对路径
+    return os.path.abspath(os.path.join(current_directory, '..', '..'))
+
+
 def auto_make_dirs(file_path):
     dir = os.path.dirname(file_path)
     if not os.path.exists(dir):
@@ -9,6 +16,8 @@ def auto_make_dirs(file_path):
 
 
 def download_file(url, model_dir):
+    root_absolute_path = get_root_absolute_path()
+    model_dir = os.path.join(root_absolute_path, model_dir)
     auto_make_dirs(model_dir)
     if os.path.exists(model_dir):
         print(f"File '{model_dir}' already exists.")
