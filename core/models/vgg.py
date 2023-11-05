@@ -23,7 +23,9 @@ VGG_STRUCTURES = {
 
 VGG_BN_WEIGHTS = {
     "11": "https://download.pytorch.org/models/vgg11_bn-6002323d.pth",
-
+    "13": "https://download.pytorch.org/models/vgg13_bn-abd245e5.pth",
+    "16": "https://download.pytorch.org/models/vgg16_bn-6c64b313.pth",
+    "19": "https://download.pytorch.org/models/vgg19_bn-c79401a0.pth",
 }
 
 
@@ -95,8 +97,8 @@ def get_vgg(vgg_type, end_layer=-1, pretrained=True, num_classes=1000, only_feat
             f"The end_layer is {end_layer}, which is greater than the {model_name}'s total feature layers number: {n_layers}.")
     if pretrained:
         # 加载预训练模型
-        state_dict = load_state_dict_from_url(url=VGG_BN_WEIGHTS["11"],
-                                              model_dir="downloads/vgg11_ImageNet1K.pth",
+        state_dict = load_state_dict_from_url(url=VGG_BN_WEIGHTS[vgg_type],
+                                              model_dir=f"downloads/{model_name}_ImageNet1K.pth",
                                               map_location=get_device())
         vgg.load_state_dict(state_dict)
     if only_feature and end_layer != n_layers:
