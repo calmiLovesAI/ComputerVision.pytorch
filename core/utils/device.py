@@ -1,9 +1,13 @@
 import torch
 
 
-def get_currently_accessible_device() -> torch.device:
+def get_device() -> torch.device:
+    return get_max_memory_device()
+
+
+def get_max_memory_device() -> torch.device:
     """
-    获取当前可访问的设备，自动设置为显存容量最大的GPU，如果没有GPU则设置为CPU
+    获取当前显存容量最大的GPU
     :return:
     """
     if torch.cuda.is_available():

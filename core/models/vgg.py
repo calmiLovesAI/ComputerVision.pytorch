@@ -3,7 +3,7 @@ import warnings
 import torch
 import torch.nn as nn
 
-from core.utils.device import get_currently_accessible_device
+from core.utils.device import get_device
 from core.utils.file_ops import load_state_dict_from_url
 
 __all__ = [
@@ -97,7 +97,7 @@ def get_vgg(vgg_type, end_layer=-1, pretrained=True, num_classes=1000, only_feat
         # 加载预训练模型
         state_dict = load_state_dict_from_url(url=VGG_BN_WEIGHTS["11"],
                                               model_dir="downloads/vgg11_ImageNet1K.pth",
-                                              map_location=get_currently_accessible_device())
+                                              map_location=get_device())
         vgg.load_state_dict(state_dict)
     if only_feature and end_layer != n_layers:
         return vgg.features[:end_layer + 1]
