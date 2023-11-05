@@ -32,8 +32,9 @@ def download_file(url, model_dir):
         #         size = f.write(data)
         #         bar.update(size)
         print("Download completed!")
+    return model_dir
 
 
 def load_state_dict_from_url(url, model_dir, map_location=None):
-    download_file(url, model_dir)
+    model_dir = download_file(url, model_dir)
     return torch.load(model_dir, map_location=map_location)

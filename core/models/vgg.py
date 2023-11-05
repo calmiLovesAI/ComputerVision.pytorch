@@ -21,6 +21,8 @@ VGG_STRUCTURES = {
     "19": [64, 64, "M", 128, 128, "M", 256, 256, 256, 256, "M", 512, 512, 512, 512, "M", 512, 512, 512, 512, "M"]
 }
 
+
+# https://pytorch.org/vision/stable/_modules/torchvision/models/vgg.html
 VGG_BN_WEIGHTS = {
     "11": "https://download.pytorch.org/models/vgg11_bn-6002323d.pth",
     "13": "https://download.pytorch.org/models/vgg13_bn-abd245e5.pth",
